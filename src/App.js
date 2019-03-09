@@ -14,7 +14,7 @@ class App extends Component {
             <Link to="/">
               <img src={logo} className="App-logo" alt="logo" />
             </Link>
-            <h1 className="App-title">Welcome to React</h1>
+            <h1 className="App-title">Auto build!</h1>
             <Link to="/">Home</Link>
             <Link to="/post/">Post</Link>
           </header>
