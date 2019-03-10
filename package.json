@@ -15,7 +15,8 @@
     "typescript": "^3.3.3333"
   },
   "scripts": {
-    "lint": "tslint -c tslint.json 'src/**/*.ts'",
+    "lint": "clear && tslint -c tslint.json  \"src/**/*.ts\" \"src/**/*.tsx\"",
+    "watch:lint": "chokidar \"src/**/*.ts\" \"src/**/*.tsx\" tslint.json -c \"npm run lint\"",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -31,6 +32,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
+    "chokidar-cli": "^1.2.2",
     "tslint": "^5.13.1"
   }
 }
