@@ -1,6 +1,5 @@
 import * as React from 'react';
 import * as videos from '../data/videos';
-import './youtube.css';
 
 interface Props {
 		videoSpec: videos.VideoSpec;
