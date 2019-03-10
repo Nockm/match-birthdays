@@ -7,12 +7,31 @@ class Videos extends React.Component {
 	public render(): React.ReactNode {
 		function videoSpecToComponent(videoSpec: videoData.VideoSpec) {
 			return (
-				<VideoComponent videoSpec={videoSpec}></VideoComponent>
+				<div
+					key={R.join('', [
+						videoSpec.code,
+						videoSpec.start,
+						videoSpec.end,
+					])}
+				>
+					<VideoComponent
+						videoSpec={videoSpec}
+						>
+					</VideoComponent>
+				</div>
 			);
 		}
 
 		return (
-			R.map(videoSpecToComponent, videoData.Videos)
+			<div
+				style={{
+					display: 'flex',
+					flexFlow: 'row',
+					flexWrap: 'wrap',
+				}}
+			>
+				{R.map(videoSpecToComponent, videoData.Videos)}
+			</div>
 		);
 	}
 }
