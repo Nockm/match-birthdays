@@ -55,6 +55,26 @@ interface ListMatchesResult_MatchesArrayItem {
 	id: number;
 	homeTeam: ListMatchesResult_MatchesArrayItem_Team;
 	awayTeam: ListMatchesResult_MatchesArrayItem_Team;
+	score: {
+		winner: 'AWAY_TEAM',
+		duration: 'REGULAR',
+		fullTime: {
+			homeTeam: number,
+			awayTeam: number,
+		},
+		halfTime: {
+			homeTeam: number,
+			awayTeam: number,
+		},
+		extraTime: {
+			homeTeam: number | null,
+			awayTeam: number | null,
+		},
+		penalties: {
+			homeTeam: number | null,
+			awayTeam: number | null,
+		},
+	};
 }
 
 interface ListMatchesResult {
@@ -102,15 +122,15 @@ function sleep(ms: number): Promise<any> {
 
 async function invoke(endpoint: string): Promise<any> {
 	// Cache load.
-	const cachePath: string = './cache/calls.json';
-	const cacheText: any = readFileSync(cachePath, { encoding: 'utf8' }) || '{}';
-	const cache: any = JSON.parse(cacheText);
+	// const cachePath: string = './cache/calls.json';
+	// const cacheText: any = readFileSync(cachePath, { encoding: 'utf8' }) || '{}';
+	// const cache: any = JSON.parse(cacheText);
 
 	// Cache hit.
 	const hash: string = crypto.createHash('md5').update(endpoint).digest('hex');
-	if (cache[hash]) {
-		return cache[hash];
-	}
+	// if (cache[hash]) {
+	// 	return cache[hash];
+	// }
 
 	// Fresh request.
 	const request = {
@@ -127,8 +147,8 @@ async function invoke(endpoint: string): Promise<any> {
 	console.log('API Call:', endpoint);
 
 	// Cache update.
-	cache[hash] = result;
-	writeFileSync(cachePath, JSON.stringify(cache, null, 4), { encoding: 'utf8' });
+	// cache[hash] = result;
+	// writeFileSync(cachePath, JSON.stringify(cache, null, 4), { encoding: 'utf8' });
 
 	// Return result.
 	return result;

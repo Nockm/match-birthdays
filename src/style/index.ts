@@ -1,5 +1,7 @@
 export default {
-	background: '#034694',
+	background: 'white',
+	highlightBg: 'blue',
+	highlightFg: 'white',
 	videoBg: 'white',
 	videoFg: 'black',
 };
