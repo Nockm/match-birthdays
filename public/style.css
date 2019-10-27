@@ -1,0 +1,6 @@
+@font-face {
+font-family: 'Radikal';
+font-style: normal;
+font-weight: normal;
+src: local('Radikal'), url('Radikal Bold.woff') format('woff');
+}
