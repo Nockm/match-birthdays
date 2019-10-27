@@ -39,10 +39,17 @@ interface GetCompetitionResult_Season {
 	startDate: string;
 	endDate: string;
 	currentMatchday: number;
-	winner: string;
+	winner: string | null,
 }
 
 interface GetCompetitionResult {
+	id: number;
+	area: ListCompetitionsResult_CompetitionsArrayItem_Area;
+	name: string;
+	code: string;
+	emblemUrl: string | null;
+	plan: string;
+	currentSeason: GetCompetitionResult_Season;
 	seasons: GetCompetitionResult_Season[];
 }
 
@@ -220,16 +227,29 @@ async function processMatchday(competitionId: number, matchday: number): Promise
 	return matches;
 }
 
-export async function main() {
-	const premierLeague: GetCompetitionResult | null = await getCompetition(COMPETITIONS.PREMIER_LEAGUE);
-	if (!premierLeague) {
+export interface Data {
+	competition: GetCompetitionResult;
+	matchday: number;
+	matches: Match[];
+}
+
+export async function main(): Promise<Data | null> {
+	const competition: GetCompetitionResult | null = await getCompetition(COMPETITIONS.PREMIER_LEAGUE);
+	if (!competition) {
 		return null;
 	}
 
-	const currentMatchday: number = premierLeague.seasons[0].currentMatchday;
-	if (!currentMatchday) {
+	const matchday: number = competition.seasons[0].currentMatchday;
+	if (!matchday) {
 		return null;
 	}
 
-	return processMatchday(COMPETITIONS.PREMIER_LEAGUE, currentMatchday);
+	const matches: Match[] = await processMatchday(COMPETITIONS.PREMIER_LEAGUE, matchday);
+	const data: Data = {
+		competition,
+		matchday,
+		matches,
+	};
+
+	return data;
 }

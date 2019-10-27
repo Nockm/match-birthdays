@@ -2,14 +2,15 @@ import React, { Component } from 'react';
 import { BrowserRouter, Link, Switch } from 'react-router-dom';
 import style from '../style/index';
 import * as db from '../logic/db';
+import { stripLeadingSlash } from 'history/PathUtils';
 
-const matches: db.Match[] = require('../data/data.json');
+const data: db.Data = require('../data/data.json');
 
 type Props = {
 }
 
 type State = {
-	matches: db.Match[];
+	data: db.Data;
 }
 
 class App extends Component<Props, State> {
@@ -17,7 +18,7 @@ class App extends Component<Props, State> {
 		super(props);
 
 		this.state = {
-			matches,
+			data,
 		}
 	}
 
@@ -39,8 +40,8 @@ class App extends Component<Props, State> {
 	renderPlayerWithSameBirthday = (players: db.Player[]) => {
 		return (
 			<React.Fragment>
-				<tr style={{ height: 12 }}></tr>
 				{ players.map(this.renderPlayer) }
+				<tr style={{ height: 20 }}></tr>
 			</React.Fragment>
 		)
 	}
@@ -65,49 +66,50 @@ class App extends Component<Props, State> {
 				<tr><td style={scoreStyle}>{ match.score.fullTime.homeTeam }</td><td style={teamStyle}>{ match.homeTeam.name }</td></tr>
 				<tr><td style={scoreStyle}>{ match.score.fullTime.awayTeam }</td><td style={teamStyle}>{ match.awayTeam.name }</td></tr>
 				{ match.playersWithTheSameBirthday.map(this.renderPlayerWithSameBirthday) }
+				<tr style={{ height: 36 }}></tr>
 			</React.Fragment>
 		)
 	}
 
-	public render() {
-		const routerExample = (
+	renderData = (data: db.Data) => {
+		return (
 			<div
 				style={{
-					padding: '20px',
-					display: 'none',
+					fontFamily: 'Radikal',
+					background: style.background,
 				}}
 			>
-				<Link to='/'>Home</Link>
-				<Link to='/post/'>Post</Link>
-				<Switch>
-				</Switch>
-			</div>
-		);
-
-		return (
-			<BrowserRouter>
-				<div
-					style={{
-						fontFamily: 'Radikal',
-						background: style.background,
-						padding: '20px',
-					}}
-				>
-					<div
-						style={{
-							fontSize: 80,
-							marginBottom: 40,
-						}}
-					>
-						Premier League
-					</div>
+				<div style={{
+					display: 'flex',
+					fontSize: 40,
+					marginBottom: 40,
+					color: style.highlightFg,
+					background: style.highlightBg,
+					padding: '20px',
+				}}>
+					<div style={{ }} >{ data.competition.name }</div>
+					<div style={{ width: 20 }} ></div>
+					<div style={{ opacity: 0.5 }} >{ `(${data.competition.area.name}, Matchday ${data.competition.currentSeason.currentMatchday})` }</div>
+				</div>
+				<div style={{
+					padding: '20px',
+				}}>
 					<table>
 						<tbody>
-							{ this.state.matches.map(this.renderMatch) }
+							{ this.state.data.matches.map(this.renderMatch) }
 						</tbody>
 					</table>
-					{routerExample}
 				</div>
+			</div>
+		)
+	}
+
+	public render() {
+		return (
+			<BrowserRouter>
+			{
+				this.renderData(this.state.data)
+			}
 			</BrowserRouter>
 		);
 	}
