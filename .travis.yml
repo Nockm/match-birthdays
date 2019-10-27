@@ -14,6 +14,6 @@ deploy:
   skip_cleanup: true
   local_dir: build
   default_text_charset: "utf-8"
-  bucket: "sen-vdo"
+  bucket: "match-birthdays"
   region: eu-west-2
   acl: public_read
