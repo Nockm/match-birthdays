@@ -26,10 +26,12 @@ class App extends Component<Props, State> {
 
 		return (
 			<tr>
-				<td>{`${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`}</td>
+				<td></td>
+				<td></td>
 				<td align="right">{`${player.shirtNumber || ''}`}</td>
 				<td>{`${player.name}`}</td>
-				<td>{ player.position }</td>
+				<td>{`${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()}`}</td>
+				<td style={{opacity: 0.5}}>{ player.position }</td>
 			</tr>
 		)
 	}
@@ -46,6 +48,7 @@ class App extends Component<Props, State> {
 	renderMatch = (match: db.Match) => {
 		const baseStyle = {
 			padding: 8,
+			fontSize: style.fontSize1,
 		};
 
 		const teamStyle = {
@@ -58,25 +61,11 @@ class App extends Component<Props, State> {
 		};
 
 		return (
-			<div>
-				<table>
-					<tbody>
-						<tr><td style={scoreStyle}>{ match.score.fullTime.homeTeam }</td><td style={teamStyle}>{ match.homeTeam.name }</td></tr>
-						<tr><td style={scoreStyle}>{ match.score.fullTime.awayTeam }</td><td style={teamStyle}>{ match.awayTeam.name }</td></tr>
-					</tbody>
-				</table>
-				<div style={{
-					paddingLeft: 48,
-				}}>
-					<div style={{padding: 5}}>
-						<table>
-							<tbody>
-								{ match.playersWithTheSameBirthday.map(this.renderPlayerWithSameBirthday) }
-							</tbody>
-						</table>
-					</div>
-				</div>
-			</div>
+			<React.Fragment>
+				<tr><td style={scoreStyle}>{ match.score.fullTime.homeTeam }</td><td style={teamStyle}>{ match.homeTeam.name }</td></tr>
+				<tr><td style={scoreStyle}>{ match.score.fullTime.awayTeam }</td><td style={teamStyle}>{ match.awayTeam.name }</td></tr>
+				{ match.playersWithTheSameBirthday.map(this.renderPlayerWithSameBirthday) }
+			</React.Fragment>
 		)
 	}
 
@@ -112,7 +101,11 @@ class App extends Component<Props, State> {
 					>
 						Premier League
 					</div>
-					<div>{ this.state.matches.map(this.renderMatch) }</div>
+					<table>
+						<tbody>
+							{ this.state.matches.map(this.renderMatch) }
+						</tbody>
+					</table>
 					{routerExample}
 				</div>
 			</BrowserRouter>
