@@ -1,13 +1,14 @@
 import crypto from 'crypto';
 import { readFileSync, writeFileSync } from 'fs';
 import fetch, { Headers } from 'node-fetch';
+import * as R from 'ramda';
 
-interface Area {
+interface ListCompetitionsResult_CompetitionsArrayItem_Area {
 	id: number;
 	name: string;
 }
 
-interface Season {
+interface ListCompetitionsResult_CompetitionsArrayItem_Season {
 	id: number;
 	startDate: string;
 	endDate: string;
@@ -15,25 +16,25 @@ interface Season {
 	winner?: any;
 }
 
-interface ListCompetitionsCompetition {
+interface ListCompetitionsResult_CompetitionsArrayItem {
 	id: number;
-	area: Area;
+	area: ListCompetitionsResult_CompetitionsArrayItem_Area;
 	name: string;
 	code?: any;
 	emblemUrl?: any;
 	plan: string;
-	currentSeason: Season;
-	numberOfAvailableSeasons: 1;
+	currentSeason: ListCompetitionsResult_CompetitionsArrayItem_Season;
+	numberOfAvailableSeasons: number;
 	lastUpdated: string;
 }
 
 interface ListCompetitionsResult {
 	count: number;
 	filters: {};
-	competitions: ListCompetitionsCompetition[];
+	competitions: ListCompetitionsResult_CompetitionsArrayItem[];
 }
 
-interface GetCompetitionResultSeason {
+interface GetCompetitionResult_Season {
 	id: number;
 	startDate: string;
 	endDate: string;
@@ -42,8 +43,56 @@ interface GetCompetitionResultSeason {
 }
 
 interface GetCompetitionResult {
-	seasons: GetCompetitionResultSeason[];
+	seasons: GetCompetitionResult_Season[];
 }
+
+interface ListMatchesResult_MatchesArrayItem_Team {
+	id: number;
+	name: string;
+}
+
+interface ListMatchesResult_MatchesArrayItem {
+	id: number;
+	homeTeam: ListMatchesResult_MatchesArrayItem_Team;
+	awayTeam: ListMatchesResult_MatchesArrayItem_Team;
+}
+
+interface ListMatchesResult {
+	matches: ListMatchesResult_MatchesArrayItem[];
+}
+
+interface GetTeamResult_Player {
+	id: number;
+	name: string;
+	position: string;
+	dateOfBirth: string;
+	countryOfBirth: string;
+	nationality: string;
+	shirtNumber: number;
+	role: string;
+}
+
+interface GetTeamResult {
+	id: number;
+	name: string;
+	shortName: string;
+	tla: string;
+	crestUrl: string;
+	address: string;
+	phone: null;
+	website: string;
+	email: string;
+	founded: number;
+	clubColors: string;
+	venue: string;
+	squad: GetTeamResult_Player[];
+}
+
+/*
+	Fetch.
+*/
+
+const apikey: string = '85daf6c69c744f06ae1f5cebb93006a8';
 
 function sleep(ms: number): Promise<any> {
 	return new Promise((resolve, reject) => {
@@ -52,104 +101,115 @@ function sleep(ms: number): Promise<any> {
 }
 
 async function invoke(endpoint: string): Promise<any> {
+	// Cache load.
 	const cachePath: string = './cache/calls.json';
 	const cacheText: any = readFileSync(cachePath, { encoding: 'utf8' }) || '{}';
 	const cache: any = JSON.parse(cacheText);
 
+	// Cache hit.
 	const hash: string = crypto.createHash('md5').update(endpoint).digest('hex');
-
 	if (cache[hash]) {
 		return cache[hash];
 	}
 
+	// Fresh request.
 	const request = {
 		method: 'GET',
-		headers: new Headers({
-			'X-Auth-Token': '85daf6c69c744f06ae1f5cebb93006a8',
-		}),
+		headers: new Headers({ 'X-Auth-Token': apikey }),
 	};
 
+	// Fresh response.
 	const response = await fetch(`http://api.football-data.org/v2/${endpoint}`, request);
-	const obj = await response.json();
-	await sleep(1000);
-	console.log('invoked:', endpoint);
+	const result = await response.json();
 
-	cache[hash] = obj;
+	// Throttle and indicate fresh API call.
+	await sleep(6000);
+	console.log('API Call:', endpoint);
+
+	// Cache update.
+	cache[hash] = result;
 	writeFileSync(cachePath, JSON.stringify(cache, null, 4), { encoding: 'utf8' });
-	return obj;
+
+	// Return result.
+	return result;
 }
 
-async function listCompetitions(): Promise<ListCompetitionsResult> {
-	return invoke('competitions/');
-}
+/*
+	API
+*/
 
-async function getCompetition(id: string): Promise<GetCompetitionResult> {
-	return invoke(`competitions/${id}`);
-}
-
-interface ListMatchesResultMatchesArrayItemTeam {
-	id: number;
-	name: string;
-}
-
-interface ListMatchesResultMatchesArrayItem {
-	id: string;
-	homeTeam: ListMatchesResultMatchesArrayItemTeam;
-	awayTeam: ListMatchesResultMatchesArrayItemTeam;
-}
-
-interface ListMatchesResult {
-	matches: ListMatchesResultMatchesArrayItem[];
-}
-
-async function listMatches(competitionId: string, matchday: number): Promise<ListMatchesResult> {
-	return invoke(`competitions/${competitionId}/matches?matchday=${matchday}`);
-}
-
-async function searchCompetitionName(name: string): Promise<ListCompetitionsCompetition | null> {
-	const listCompetitionsResult: ListCompetitionsResult = await listCompetitions();
-	const matchingCompetitions: ListCompetitionsCompetition[] = listCompetitionsResult.competitions.filter((x: ListCompetitionsCompetition) => x.name === name);
-	return matchingCompetitions.length > 0 ? matchingCompetitions[0] : null;
-}
-
-async function getMatch(matchId: string): Promise<any> {
-	return invoke(`matches/${264438}`);
-}
+async function listCompetitions(): Promise<ListCompetitionsResult> { return invoke('competitions/'); }
+async function getCompetition(id: number): Promise<GetCompetitionResult> { return invoke(`competitions/${id}`); }
+async function listMatches(competitionId: number, matchday: number): Promise<ListMatchesResult> { return invoke(`competitions/${competitionId}/matches?matchday=${matchday}`); }
+async function getTeam(teamId: number): Promise<GetTeamResult> { return invoke(`teams/${teamId}`); }
 
 const COMPETITIONS = {
-	PREMIER_LEAGUE: '2021',
+	PREMIER_LEAGUE: 2021,
 };
 
-interface GetTeamResult {
-	id: string;
+export interface Player extends GetTeamResult_Player {
+	teamId: number;
+	birthday: string;
 }
 
-function getTeam(teamId: number): Promise<GetTeamResult> {
-	return invoke(`teams/${teamId}`);
+export type PlayersWithTheSameBirthday = Player[][];
+
+async function processMatch(match: ListMatchesResult_MatchesArrayItem): Promise<Match> {
+	function getPlayer(team: GetTeamResult, x: GetTeamResult_Player): Player {
+		const birthdayDate: Date = new Date(x.dateOfBirth);
+		return {
+			teamId: team.id,
+			...x,
+			birthday: `${birthdayDate.getMonth() + 1} ${birthdayDate.getDate()}`,
+		};
+	}
+
+	const homeTeam: GetTeamResult = await getTeam(match.homeTeam.id);
+	const awayTeam: GetTeamResult = await getTeam(match.awayTeam.id);
+
+	const players: Player[] = [
+		...R.map((x: GetTeamResult_Player) => getPlayer(homeTeam, x))(homeTeam.squad),
+		...R.map((x: GetTeamResult_Player) => getPlayer(awayTeam, x))(awayTeam.squad),
+	];
+
+	const playersWithTheSameBirthday: any = R.pipe(
+		R.groupBy((x: Player) => x.birthday),
+		R.values as (x: {[birthday: string]: Player[]}) => Player[][],
+		R.filter((x: Player[]) => x.length > 1) as (x: Player[][]) => Player[][],
+	)(players);
+
+	return {
+		...match,
+		playersWithTheSameBirthday,
+	};
 }
 
-async function getCurrentMatchday(competitionId: string): Promise<number | null> {
-	const premierLeague: GetCompetitionResult | null = await getCompetition('2021');
+export interface Match extends ListMatchesResult_MatchesArrayItem {
+	playersWithTheSameBirthday: PlayersWithTheSameBirthday;
+}
+
+async function processMatchday(competitionId: number, matchday: number): Promise<Match[]> {
+	const plMatchday: ListMatchesResult = await listMatches(competitionId, matchday);
+
+	const matches: Match[] = [];
+	for await (const matchResponse of plMatchday.matches) {
+		const match: Match = await processMatch(matchResponse);
+		matches.push(match);
+	}
+
+	return matches;
+}
+
+export async function main() {
+	const premierLeague: GetCompetitionResult | null = await getCompetition(COMPETITIONS.PREMIER_LEAGUE);
 	if (!premierLeague) {
 		return null;
 	}
 
-	return premierLeague.seasons[0].currentMatchday;
-}
+	const currentMatchday: number = premierLeague.seasons[0].currentMatchday;
+	if (!currentMatchday) {
+		return null;
+	}
 
-async function processMatchday(competitionId: string, matchday: number) {
-	const plMatchday: ListMatchesResult = await listMatches(competitionId, matchday);
-	const singleMatch: ListMatchesResultMatchesArrayItem = plMatchday.matches[0];
-
-	const homeTeam: GetTeamResult = await getTeam(singleMatch.homeTeam.id);
-	const awayTeam: GetTeamResult = await getTeam(singleMatch.awayTeam.id);
-
-	return {
-		homeTeam,
-		awayTeam,
-	};
-}
-
-export async function main() {
-	return processMatchday(COMPETITIONS.PREMIER_LEAGUE, 10);
+	return processMatchday(COMPETITIONS.PREMIER_LEAGUE, currentMatchday);
 }
