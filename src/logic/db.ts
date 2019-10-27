@@ -99,7 +99,7 @@ interface GetTeamResult_Player {
 	role: string;
 }
 
-interface GetTeamResult {
+export interface GetTeamResult {
 	id: number;
 	name: string;
 	shortName: string;
@@ -207,11 +207,15 @@ async function processMatch(match: ListMatchesResult_MatchesArrayItem): Promise<
 
 	return {
 		...match,
+		homeTeam,
+		awayTeam,
 		playersWithTheSameBirthday,
 	};
 }
 
 export interface Match extends ListMatchesResult_MatchesArrayItem {
+	homeTeam: GetTeamResult;
+	awayTeam: GetTeamResult;
 	playersWithTheSameBirthday: PlayersWithTheSameBirthday;
 }
 

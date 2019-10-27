@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { BrowserRouter, Link, Switch } from 'react-router-dom';
 import style from '../style/index';
 import * as db from '../logic/db';
+import * as R from 'ramda';
 import { stripLeadingSlash } from 'history/PathUtils';
 
 const data: db.Data = require('../data/data.json');
@@ -65,11 +66,31 @@ class App extends Component<Props, State> {
 			backgroundColor: style.highlightBg,
 		};
 
+		const renderTeamSummary = (score: number, team: db.GetTeamResult) => {
+			return (
+				<tr style={{ backgroundColor: '#EEE' }}>
+					<td style={scoreStyle}>{ score }</td>
+					<td align="center"><img style={{ height: 48, padding: 12 }} src={team.crestUrl}></img></td>
+					<td colSpan={23} style={teamStyle}>
+						<div>{ team.name }</div>
+						<div style={{ opacity: 0.5, fontSize: style.fontSize3 }}><i>{ `${team.squad.length} players` }</i></div>
+					</td>
+				</tr>
+			)
+		}
+
 		return (
 			<React.Fragment>
-				<tr><td style={scoreStyle}>{ match.score.fullTime.homeTeam }</td><td style={teamStyle}>{ match.homeTeam.name }</td></tr>
-				<tr><td style={scoreStyle}>{ match.score.fullTime.awayTeam }</td><td style={teamStyle}>{ match.awayTeam.name }</td></tr>
-				{ match.playersWithTheSameBirthday.map(this.renderPlayerWithSameBirthday) }
+				{ renderTeamSummary(match.score.fullTime.homeTeam, match.homeTeam) }
+				{ renderTeamSummary(match.score.fullTime.awayTeam, match.awayTeam) }
+				<tr style={{ height: 12 }}></tr>
+				{
+					R.pipe(
+						R.sortBy((x: db.Player[]) => x.length) as (x: db.Player[][]) => db.Player[][],
+						R.reverse as (x: db.Player[][]) => db.Player[][],
+						R.map(this.renderPlayerWithSameBirthday)
+					)(match.playersWithTheSameBirthday)
+				}
 				<tr style={{ height: 36 }}></tr>
 			</React.Fragment>
 		)
