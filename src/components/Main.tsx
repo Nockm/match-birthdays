@@ -26,7 +26,11 @@ class App extends Component<Props, State> {
 		const date: Date = new Date(player.dateOfBirth);
 
 		return (
-			<tr>
+			<tr
+				style={{
+					fontSize: style.fontSize3,
+				}}
+			>
 				<td></td>
 				<td></td>
 				<td align="right">{`${player.shirtNumber || ''}`}</td>
@@ -49,7 +53,7 @@ class App extends Component<Props, State> {
 	renderMatch = (match: db.Match) => {
 		const baseStyle = {
 			padding: 8,
-			fontSize: style.fontSize1,
+			fontSize: style.fontSize2,
 		};
 
 		const teamStyle = {
@@ -81,7 +85,7 @@ class App extends Component<Props, State> {
 			>
 				<div style={{
 					display: 'flex',
-					fontSize: 40,
+					fontSize: style.fontSize1,
 					marginBottom: 40,
 					color: style.highlightFg,
 					background: style.highlightBg,

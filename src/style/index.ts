@@ -1,7 +1,7 @@
 export default {
-	fontSize1: 20,
-	fontSize2: 16,
-	fontSize3: 12,
+	fontSize1: 32,
+	fontSize2: 18,
+	fontSize3: 14,
 	background: 'white',
 	highlightBg: 'rgb(55,0,60)',
 	highlightFg: 'white',
